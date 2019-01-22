@@ -9,8 +9,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.View;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
@@ -18,59 +21,75 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
+    private WebView myWebView ;
     private WebView mWebview ;
-    private ProgressBar progress;
+    private ProgressBar progressBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_main);
-        mWebview  = new WebView(this);
-
-        mWebview.getSettings().setJavaScriptEnabled(true); // enable javascript
-
-        final Activity activity = this;
-
-        mWebview.setWebViewClient(new WebViewClient() {
-            ProgressDialog progressDialog;
-            @SuppressWarnings("deprecation")
-            @Override
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                Toast.makeText(activity, description, Toast.LENGTH_SHORT).show();
-            }
-            @TargetApi(android.os.Build.VERSION_CODES.M)
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest req, WebResourceError rerr) {
-                // Redirect to deprecated method, so you can use it in all SDK versions
-                onReceivedError(view, rerr.getErrorCode(), rerr.getDescription().toString(), req.getUrl().toString());
-            }
-            //Show loader on url load
-//            public void onLoadResource (WebView view, String url) {
-//                if (progressDialog == null) {
-//                    // in standard case YourActivity.this
-//                    progressDialog = new ProgressDialog(MainActivity.this);
-//                    progressDialog.setMessage("Loading...");
-//                    progressDialog.show();
-//                }
+        setContentView(R.layout.activity_main);
+        progressBar=(ProgressBar)findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.VISIBLE);
+//        mWebview  = new WebView(this);
+//
+//        mWebview.getSettings().setJavaScriptEnabled(true); // enable javascript
+//
+//        final Activity activity = this;
+//
+//        mWebview.setWebViewClient(new WebViewClient() {
+//            ProgressDialog progressDialog;
+//            @SuppressWarnings("deprecation")
+//            @Override
+//            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+//                Toast.makeText(activity, description, Toast.LENGTH_SHORT).show();
 //            }
-//            public void onPageFinished(WebView view, String url) {
-//                try{
-//                    if (progressDialog.isShowing()) {
-//                        progressDialog.dismiss();
-//                        progressDialog = null;
-//                    }
-//                }catch(Exception exception){
-//                    exception.printStackTrace();
-//                }
+//            @TargetApi(android.os.Build.VERSION_CODES.M)
+//            @Override
+//            public void onReceivedError(WebView view, WebResourceRequest req, WebResourceError rerr) {
+//                // Redirect to deprecated method, so you can use it in all SDK versions
+//                onReceivedError(view, rerr.getErrorCode(), rerr.getDescription().toString(), req.getUrl().toString());
 //            }
+//
+//
+//        });
+//
+//
+////        mWebview .loadUrl("https://homergize.com/alpha/ios-homepage");
+//        mWebview .loadUrl("http://mybusket.000webhostapp.com/");
+//        setContentView(mWebview );
 
+
+        myWebView = (WebView) findViewById(R.id.webview);
+        myWebView.setWebViewClient(new MyWebViewClient());
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        myWebView.loadUrl("http://mybusket.000webhostapp.com/");
+
+
+
+        myWebView.setWebChromeClient(new WebChromeClient() {
+            public void onProgressChanged(WebView view, int progress) {
+                progressBar.setProgress(progress);
+                if (progress == 100) {
+                    progressBar.setVisibility(View.GONE);
+
+                } else {
+                    progressBar.setVisibility(View.VISIBLE);
+
+                }
+            }
         });
 
 
-//        mWebview .loadUrl("https://homergize.com/alpha/ios-homepage");
-        mWebview .loadUrl("http://mybusket.000webhostapp.com/");
-        setContentView(mWebview );
+    }
 
-
+    private class MyWebViewClient extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            view.loadUrl(url);
+            return true;
+        }
     }
 
     @Override
@@ -84,8 +103,8 @@ public class MainActivity extends AppCompatActivity {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_BACK:
-                    if (mWebview.canGoBack()) {
-                        mWebview.goBack();
+                    if (myWebView.canGoBack()) {
+                        myWebView.goBack();
                     } else {
                         showConfirmationDialog();
 //                        finish();
